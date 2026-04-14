@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  id                String           @id @default(uuid())
+  username          String           @unique
+  email             String           @unique
+  password          String
+  role              Role             @default(CASHIER)
+  
+  isVerified        Boolean          @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpires DateTime?
+  
+  createdAt         DateTime         @default(now())
+  
+  inventoryReceipts InventoryReceipt[]
+  sales           Sale[]
+  customerReturns CustomerReturn[]
+  supplierReturns SupplierReturn[]
+  expenses        Expense[]
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  CASHIER
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  fullName  String
+  phone     String?
+  sales     Sale[]
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  products         Product[]
+  productTemplates ProductTemplate[]
+}
+
+model Color {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  products         Product[]
+  productTemplates ProductTemplate[]
+}
+
+model Size {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  products         Product[]
+  productTemplates ProductTemplate[]
+}
+
+// YENİ ƏLAVƏ: Şablonlar cədvəli
+model ProductTemplate {
+  id         String    @id @default(uuid())
+  name       String
+  
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  
+  colorId    String?
+  color      Color?    @relation(fields: [colorId], references: [id])
+  
+  sizeId     String?
+  size       Size?     @relation(fields: [sizeId], references: [id])
+}
+
+model Supplier {
+  id        String             @id @default(uuid())
+  name      String
+  contact   String?
+  receipts  InventoryReceipt[]
+  products  Product[]
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  barcode       String   @unique
+  name          String
+  stockQuantity Int      @default(0)
+  purchasePrice Float
+  salePrice     Float
+
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  colorId       String?
+  color         Color?    @relation(fields: [colorId], references: [id])
+  sizeId        String?
+  size          Size?     @relation(fields: [sizeId], references: [id])
+  supplierId    String?
+  supplier      Supplier? @relation(fields: [supplierId], references: [id])
+
+  saleItems           SaleItem[]
+  inventoryItems      InventoryItem[]
+  customerReturnItems CustomerReturnItem[]
+  supplierReturnItems SupplierReturnItem[]
+}
+
+model InventoryReceipt {
+  id          String          @id @default(uuid())
+  receiptCode String          @unique
+  date        DateTime        @default(now())
+  totalAmount Float           @default(0)
+  
+  supplierId  String
+  supplier    Supplier        @relation(fields: [supplierId], references: [id])
+  
+  userId      String?
+  user        User?           @relation(fields: [userId], references: [id])
+  
+  items           InventoryItem[]
+  supplierReturns SupplierReturn[]
+}
+
+model InventoryItem {
+  id               String           @id @default(uuid())
+  quantity         Int
+  purchasePrice    Float
+  
+  productId        String
+  product          Product          @relation(fields: [productId], references: [id])
+  
+  receiptId        String
+  inventoryReceipt InventoryReceipt @relation(fields: [receiptId], references: [id])
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  receiptNo     String        @unique
+  date          DateTime      @default(now())
+  totalAmount   Float
+  discount      Float         @default(0)
+  finalAmount   Float
+  
+  // YENİ ƏLAVƏ: Ödənən və Qalıq
+  paidAmount    Float         @default(0)
+  changeAmount  Float         @default(0)
+  
+  paymentMethod PaymentMethod
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  
+  customerId    String?
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+
+  items           SaleItem[]
+  customerReturns CustomerReturn[]
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  price     Float
+  discount  Float   @default(0)
+
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+}
+
+model CustomerReturn {
+  id          String               @id @default(uuid())
+  returnCode  String               @unique
+  date        DateTime             @default(now())
+  totalAmount Float
+  reason      String?
+  
+  saleId      String
+  sale        Sale                 @relation(fields: [saleId], references: [id])
+  
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id])
+
+  items       CustomerReturnItem[]
+}
+
+model CustomerReturnItem {
+  id               String         @id @default(uuid())
+  quantity         Int
+  refundAmount     Float
+  
+  returnId         String
+  customerReturn   CustomerReturn @relation(fields: [returnId], references: [id])
+  
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id])
+}
+
+model SupplierReturn {
+  id          String               @id @default(uuid())
+  returnCode  String               @unique
+  date        DateTime             @default(now())
+  totalAmount Float
+  reason      String?
+  
+  receiptId   String
+  receipt     InventoryReceipt     @relation(fields: [receiptId], references: [id])
+  
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id])
+
+  items       SupplierReturnItem[]
+}
+
+model SupplierReturnItem {
+  id               String         @id @default(uuid())
+  quantity         Int
+  refundAmount     Float
+  
+  returnId         String
+  supplierReturn   SupplierReturn @relation(fields: [returnId], references: [id])
+  
+  productId        String
+  product          Product        @relation(fields: [productId], references: [id])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  title       String
+  amount      Float
+  date        DateTime @default(now())
+  description String?
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model StoreSettings {
+  id          String   @id @default(uuid())
+  name        String
+  address     String?
+  phone       String?
+  logoUrl     String?
+  currency    String   @default("AZN")
+}
