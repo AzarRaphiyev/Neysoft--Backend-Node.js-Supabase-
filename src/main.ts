@@ -7,8 +7,7 @@ async function bootstrap() {
 
   // 1. CORS İcazəsi (Frontend-in qoşulması üçün)
   app.enableCors({
-    origin: '*', 
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: true,
     credentials: true,
   });
 

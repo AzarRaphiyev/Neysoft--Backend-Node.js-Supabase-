@@ -81,8 +81,8 @@ export class AuthService {
   // 3. GİRİŞ (LOGIN) METODU
   async login(dto: LoginAuthDto) { // <-- Bura dəyişdi
     // Kullanıcıyı veritabanından bul
-    const user = await this.prisma.user.findUnique({
-      where: { username: dto.username },
+    const user = await this.prisma.user.findFirst({
+      where: { username: { equals: dto.username, mode: 'insensitive' } },
     });
 
     // Kullanıcı var mı ve şifre doğru mu kontrol et
