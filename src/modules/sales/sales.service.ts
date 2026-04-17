@@ -8,8 +8,8 @@ export class SalesService {
 
   // Yeni satış yaratmaq metodu (fiziki kassa əməliyyatı)
   async create(createSaleDto: CreateSaleDto, userId: string) {
-    // DTO-dan gələn məlumatlar, əgər paidAmount və changeAmount göndərilməyibsə 0 olaraq təyin edirik
-    const { discount, paymentMethod, items, paidAmount = 0, changeAmount = 0 } = createSaleDto;
+    // DTO-dan gələn məlumatlar
+    const { discount, paymentMethod, items, odenisMebleg = 0, qaliqMebleg = 0, userId: dtoUserId } = createSaleDto;
 
     // Benzersiz qəbz nömrəsi yaratmaq
     const receiptNo = await this.generateReceiptNo();
@@ -62,7 +62,7 @@ export class SalesService {
         });
       }
 
-      // 2. Yeni satış qeydi yaradırıq (kassirin userId-si ilə)
+      // 2. Yeni satış qeydi yaradırıq (kassirin userId-si ilə və ya DTO-dan gələn ilə)
       const newSale = await tx.sale.create({
         data: {
           receiptNo,
@@ -70,9 +70,9 @@ export class SalesService {
           discount,
           finalAmount,
           paymentMethod,
-          userId: userId,
-          paidAmount,
-          changeAmount,
+          userId: dtoUserId || userId,
+          paidAmount: odenisMebleg,
+          changeAmount: qaliqMebleg,
           items: {
             create: items.map((item) => ({
               quantity: item.quantity,

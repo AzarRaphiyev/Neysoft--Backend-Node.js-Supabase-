@@ -32,8 +32,8 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Sistemə giriş (Yalnız username və password ilə)' })
-  login(@Body() loginDto: LoginAuthDto) { // Burada CreateAuthDto əvəzinə LoginAuthDto istifadə etdik
+  @ApiOperation({ summary: 'Sistemə giriş (Username və ya email və şifrə ilə)' })
+  login(@Body() loginDto: LoginAuthDto) {
     return this.authService.login(loginDto);
   }
   @Post('forgot-password')

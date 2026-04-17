@@ -50,6 +50,17 @@ export class ProductsController {
     res.send(buffer);
   }
 
+  @Patch(':id/price')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Məhsulun yalnız satış qiymətini yeniləmək' })
+  updatePriceById(
+    @Param('id') id: string,
+    @Body('satis_qiymeti') satisQiymeti: number,
+  ) {
+    return this.productsService.updateSalePrice(id, Number(satisQiymeti));
+  }
+
   // Barkoda görə məhsulun satış qiymətini sürətli yeniləmək
   @Patch('update-price')
   @UseGuards(JwtAuthGuard, RolesGuard)

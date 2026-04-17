@@ -136,6 +136,23 @@ export class ProductsService {
     });
   }
 
+  async updateSalePrice(id: string, satisQiymeti: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Məhsul tapılmadı');
+    }
+
+    return this.prisma.product.update({
+      where: { id },
+      data: {
+        salePrice: satisQiymeti,
+      },
+    });
+  }
+
   // Barkoda görə məhsulun satış qiymətini yeniləmək
   async updatePriceByBarcode(dto: UpdateProductPriceDto) {
     // Barkoda uyğun məhsulu tapırıq

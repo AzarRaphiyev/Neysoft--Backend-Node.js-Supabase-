@@ -125,27 +125,32 @@ export class ParametersService {
   // --- MƏHSUL ŞABLONLARI (PRODUCT TEMPLATES) ---
   async createTemplate(dto: CreateTemplateDto) {
     // Kateqoriyanı yoxlayaq
-    const category = await this.prisma.category.findUnique({ where: { id: dto.categoryId } });
+    const category = await this.prisma.category.findUnique({ where: { id: dto.nov_id } });
     if (!category) {
       throw new NotFoundException('Kateqoriya tapılmadı');
     }
 
-    if (dto.colorId) {
-      const color = await this.prisma.color.findUnique({ where: { id: dto.colorId } });
+    if (dto.reng_id) {
+      const color = await this.prisma.color.findUnique({ where: { id: dto.reng_id } });
       if (!color) {
         throw new NotFoundException('Rəng tapılmadı');
       }
     }
 
-    if (dto.sizeId) {
-      const size = await this.prisma.size.findUnique({ where: { id: dto.sizeId } });
+    if (dto.olcu_id) {
+      const size = await this.prisma.size.findUnique({ where: { id: dto.olcu_id } });
       if (!size) {
         throw new NotFoundException('Ölçü tapılmadı');
       }
     }
 
     return this.prisma.productTemplate.create({
-      data: dto,
+      data: {
+        name: dto.ad,
+        categoryId: dto.nov_id,
+        colorId: dto.reng_id,
+        sizeId: dto.olcu_id,
+      },
       include: {
         category: true,
         color: true,

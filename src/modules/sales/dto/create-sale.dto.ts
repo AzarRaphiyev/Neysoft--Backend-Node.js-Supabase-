@@ -69,13 +69,18 @@ export class CreateSaleDto {
   @Type(() => SaleItemDto)
   items: SaleItemDto[];
 
-  @ApiPropertyOptional({ description: 'Ödənilən məbləğ', default: 0 })
+  @ApiPropertyOptional({ description: 'Satışı həyata keçirən istifadəçi (Kassir/Admin ID-si)' })
   @IsOptional()
-  @IsNumber({}, { message: 'Ödənilən məbləğ rəqəm formatında olmalıdır' })
-  paidAmount?: number;
+  @IsString()
+  userId?: string;
+
+  @ApiPropertyOptional({ description: 'Müştərinin verdiyi pul', default: 0 })
+  @IsOptional()
+  @IsNumber({}, { message: 'Müştərinin verdiyi pul rəqəm formatında olmalıdır' })
+  odenisMebleg?: number;
 
   @ApiPropertyOptional({ description: 'Qaytarılan qalıq (para üstü)', default: 0 })
   @IsOptional()
-  @IsNumber({}, { message: 'Qalıq (para üstü) rəqəm formatında olmalıdır' })
-  changeAmount?: number;
+  @IsNumber({}, { message: 'Qalıq rəqəm formatında olmalıdır' })
+  qaliqMebleg?: number;
 }

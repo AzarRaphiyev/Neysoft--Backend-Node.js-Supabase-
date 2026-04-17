@@ -113,6 +113,7 @@ model InventoryReceipt {
   receiptCode String          @unique
   date        DateTime        @default(now())
   totalAmount Float           @default(0)
+  status      String          @default("Tamamlandı")
   
   supplierId  String
   supplier    Supplier        @relation(fields: [supplierId], references: [id])
@@ -149,6 +150,7 @@ model Sale {
   changeAmount  Float         @default(0)
   
   paymentMethod PaymentMethod
+  status        String        @default("Tamamlandı")
 
   userId        String
   user          User          @relation(fields: [userId], references: [id])

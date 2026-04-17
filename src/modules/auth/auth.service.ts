@@ -79,15 +79,24 @@ export class AuthService {
   }
 
   // 3. GİRİŞ (LOGIN) METODU
-  async login(dto: LoginAuthDto) { // <-- Bura dəyişdi
-    // Kullanıcıyı veritabanından bul
+  async login(dto: LoginAuthDto) {
+    if (!dto.username && !dto.email) {
+      throw new BadRequestException('İstifadəçi adı və ya email daxil edilməlidir!');
+    }
+
+    // Kullanıcıyı veritabanından bul (username veya email ile)
     const user = await this.prisma.user.findFirst({
-      where: { username: { equals: dto.username, mode: 'insensitive' } },
+      where: {
+        OR: [
+          dto.username ? { username: { equals: dto.username, mode: 'insensitive' } } : undefined,
+          dto.email ? { email: { equals: dto.email, mode: 'insensitive' } } : undefined,
+        ].filter(Boolean) as any,
+      },
     });
 
     // Kullanıcı var mı ve şifre doğru mu kontrol et
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-      throw new UnauthorizedException('Kullanıcı adı veya şifre hatalı!');
+      throw new UnauthorizedException('İstifadəçi adı/email və ya şifrə yanlışdır!');
     }
 
     // Email doğrulanmış mı kontrol et
@@ -101,7 +110,7 @@ export class AuthService {
 
     return {
       message: 'Giriş başarılı!',
-      accessToken,
+      access_token: accessToken,
       user: {
         id: user.id,
         username: user.username,

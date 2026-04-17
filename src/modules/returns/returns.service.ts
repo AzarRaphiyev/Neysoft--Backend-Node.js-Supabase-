@@ -44,7 +44,19 @@ export class ReturnsService {
         });
       }
 
-      // 2. Müştəri iadəsi qeydini yaradırıq
+      // 2. Satışın statusunu yeniləyirik
+      const sale = await tx.sale.findUnique({
+        where: { id: saleId },
+      });
+
+      if (sale) {
+        await tx.sale.update({
+          where: { id: saleId },
+          data: { status: "Qismən Qaytarıldı" },
+        });
+      }
+
+      // 3. Müştəri iadəsi qeydini yaradırıq
       const newReturn = await tx.customerReturn.create({
         data: {
           returnCode,
@@ -158,7 +170,19 @@ export class ReturnsService {
         });
       }
 
-      // 2. Tədarikçi iadəsi qeydini yaradırıq
+      // 2. Qəbzin statusunu yeniləyirik
+      const receipt = await tx.inventoryReceipt.findUnique({
+        where: { id: receiptId },
+      });
+
+      if (receipt) {
+        await tx.inventoryReceipt.update({
+          where: { id: receiptId },
+          data: { status: "Qismən Qaytarıldı" },
+        });
+      }
+
+      // 3. Tədarikçi iadəsi qeydini yaradırıq
       const newReturn = await tx.supplierReturn.create({
         data: {
           returnCode,
