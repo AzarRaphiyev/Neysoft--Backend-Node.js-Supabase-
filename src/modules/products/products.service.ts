@@ -61,7 +61,7 @@ export class ProductsService {
   }
 
  // --- Axtarış və Filterləmə funksiyası ---
-  async findAll(search?: string, isOutOfStock?: boolean) {
+  async findAll(search?: string, isOutOfStock?: boolean, categoryId?: string) {
     const whereCondition: any = {};
 
     // 1. Əgər 'search' (axtarış) sözü göndərilibsə: həm ada, həm də barkoda görə axtar
@@ -75,6 +75,10 @@ export class ProductsService {
     // 2. Əgər 'isOutOfStock' true olaraq seçilibsə: yalnız stoku 0 olanları gətir
     if (isOutOfStock) {
       whereCondition.stockQuantity = 0;
+    }
+
+    if (categoryId) {
+      whereCondition.categoryId = categoryId;
     }
 
     return this.prisma.product.findMany({

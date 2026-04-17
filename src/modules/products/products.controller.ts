@@ -29,13 +29,15 @@ export class ProductsController {
   @ApiOperation({ summary: 'Bütün məhsulları gətirmək və filterləmək (Barkod, Ad və Stok)' })
   @ApiQuery({ name: 'search', required: false, description: 'Barkod və ya məhsulun adına görə axtarış' })
   @ApiQuery({ name: 'outOfStock', required: false, type: Boolean, description: 'Yalnız stoku "0" olan (bitən) məhsulları gətir' })
+  @ApiQuery({ name: 'categoryId', required: false, description: 'Kateqoriya ID-sinə görə filterləmək' })
   findAll(
     @Query('search') search?: string,
     @Query('outOfStock') outOfStock?: string,
+    @Query('categoryId') categoryId?: string,
   ) {
     // Swagger-dən gələn dəyər string olduğu üçün onu boolean-a (true/false) çeviririk
     const isOutOfStock = outOfStock === 'true';
-    return this.productsService.findAll(search, isOutOfStock);
+    return this.productsService.findAll(search, isOutOfStock, categoryId);
   }
 
   // --- YENİ ƏLAVƏ EDİLƏN ŞTRİXKOD API-Sİ ---
