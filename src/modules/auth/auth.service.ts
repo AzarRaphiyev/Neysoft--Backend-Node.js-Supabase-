@@ -179,4 +179,24 @@ export class AuthService {
 
     return { message: 'Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.' };
   }
+
+  // 6. KULLANICILARI LİSTELE (GET USERS)
+  async findAllUsers(username?: string) {
+    const whereCondition: any = {};
+    if (username) {
+      whereCondition.username = { contains: username, mode: 'insensitive' };
+    }
+    return this.prisma.user.findMany({
+      where: whereCondition,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        // DİKKAT: password alanı kesinlikle seçilmemelidir!
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
 }

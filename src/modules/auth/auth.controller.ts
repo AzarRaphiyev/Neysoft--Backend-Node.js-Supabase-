@@ -47,4 +47,14 @@ export class AuthController {
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
   }
+
+  @Get('users')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Bütün istifadəçiləri gətir (username filteri ilə)' })
+  @ApiQuery({ name: 'username', required: false, description: 'Username ilə axtarış' })
+  findAllUsers(@Query('username') username?: string) {
+    return this.authService.findAllUsers(username);
+  }
 }
