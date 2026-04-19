@@ -53,11 +53,13 @@ export class SalesController {
     description: 'Yalnız iadə edilmiş satışları gətir (true/false)',
   })
   findAll(
+    @Req() req: any,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('receiptNo') receiptNo?: string,
     @Query('isReturned') isReturned?: string,
   ) {
-    return this.salesService.findAll(startDate, endDate, receiptNo, isReturned === 'true');
+    const filterUserId = req.user.role === 'CASHIER' ? req.user.id : undefined;
+    return this.salesService.findAll(startDate, endDate, receiptNo, isReturned === 'true', filterUserId);
   }
 }

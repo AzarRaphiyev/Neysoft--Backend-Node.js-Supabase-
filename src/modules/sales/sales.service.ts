@@ -63,6 +63,28 @@ export class SalesService {
       }
 
       // 2. Yeni satış qeydi yaradırıq (kassirin userId-si ilə və ya DTO-dan gələn ilə)
+      let customerId: string | undefined = undefined;
+
+      if (createSaleDto.customerPhone) {
+        // Önce bu telefonla müşteri var mı bak
+        const existingCustomer = await tx.customer.findFirst({
+          where: { phone: createSaleDto.customerPhone }
+        });
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id;
+        } else {
+          // Yoksa yeni müşteri yarat
+          const newCustomer = await tx.customer.create({
+            data: {
+              fullName: createSaleDto.customerName || 'Bilinməyən Müştəri',
+              phone: createSaleDto.customerPhone
+            }
+          });
+          customerId = newCustomer.id;
+        }
+      }
+
       const newSale = await tx.sale.create({
         data: {
           receiptNo,
@@ -71,6 +93,7 @@ export class SalesService {
           finalAmount,
           paymentMethod,
           userId: dtoUserId || userId,
+          customerId: customerId,
           paidAmount: odenisMebleg,
           changeAmount: qaliqMebleg,
           items: {
@@ -99,9 +122,13 @@ export class SalesService {
   }
 
   // Keçmiş satışları (fiş tarixçəsini) filterlərlə gətirmək metodu
-  async findAll(startDate?: string, endDate?: string, receiptNo?: string, isReturned?: boolean) {
+  async findAll(startDate?: string, endDate?: string, receiptNo?: string, isReturned?: boolean, userId?: string) {
     // Prisma where filtri qururuq
     const where: any = {};
+
+    if (userId) {
+      where.userId = userId;
+    }
 
     // Tarix aralığı filtri
     if (startDate || endDate) {

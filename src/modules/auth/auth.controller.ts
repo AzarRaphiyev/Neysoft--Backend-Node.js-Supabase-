@@ -1,10 +1,9 @@
-import { Controller, Post, Body, Get, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, UseGuards, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto'; 
 import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AdminResetPasswordDto } from './dto/admin-reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
@@ -27,8 +26,9 @@ export class AuthController {
   @Get('verify')
   @ApiOperation({ summary: 'Email təsdiqləmə linki' })
   @ApiQuery({ name: 'token', description: 'Emailə göndərilən unikal token' })
-  verify(@Query('token') token: string) {
-    return this.authService.verifyEmail(token);
+  async verify(@Query('token') token: string, @Res() res: any) {
+    await this.authService.verifyEmail(token);
+    return res.redirect('http://localhost:3001/login?verified=true');
   }
 
   @Post('login')
@@ -36,16 +36,13 @@ export class AuthController {
   login(@Body() loginDto: LoginAuthDto) {
     return this.authService.login(loginDto);
   }
-  @Post('forgot-password')
-  @ApiOperation({ summary: 'Şifremi Unuttum (Email gönderir)' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
-  }
-
-  @Post('reset-password')
-  @ApiOperation({ summary: 'Yeni şifre belirleme (Token ve yeni şifre ile)' })
-  resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto);
+  @Post('admin/reset-password')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Admin tərəfindən istifadəçi şifrəsinin birbaşa dəyişdirilməsi' })
+  adminResetPassword(@Body() dto: AdminResetPasswordDto) {
+    return this.authService.adminResetPassword(dto);
   }
 
   @Get('users')

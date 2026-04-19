@@ -6,8 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as nodemailer from 'nodemailer';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
+import { AdminResetPasswordDto } from './dto/admin-reset-password.dto';
 import { Role } from '@prisma/client';
 @Injectable()
 export class AuthService {
@@ -50,7 +49,7 @@ export class AuthService {
     });
 
     // Təsdiq linkini göndər
-    const url = `http://localhost:3000/auth/verify?token=${vToken}`;
+    const url = `${process.env.BACKEND_URL || 'http://localhost:3000'}/api/auth/verify?token=${vToken}`;
     await this.transporter.sendMail({
       to: user.email,
       subject: 'Neysoft - Hesabınızı Təsdiqləyin',
@@ -65,7 +64,7 @@ export class AuthService {
       where: { verificationToken: token },
     });
 
-    if (!user) throw new BadRequestException('Keçərsiz və ya müddəti bitmiş token.');
+    if (!user) throw new NotFoundException('Keçərsiz və ya istifadə edilmiş token!');
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -75,7 +74,7 @@ export class AuthService {
       },
     });
 
-    return { message: 'Email uğurla təsdiqləndi! İndi giriş edə bilərsiniz.' };
+    return { message: 'Hesabınız uğurla təsdiqləndi!' };
   }
 
   // 3. GİRİŞ (LOGIN) METODU
@@ -120,64 +119,21 @@ export class AuthService {
     };
   }
 
-  // 4. ŞİFREMİ UNUTTUM (FORGOT PASSWORD)
-  async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    
-    if (!user) {
-      throw new NotFoundException('Bu email adresi ile kayıtlı bir kullanıcı bulunamadı.');
-    }
-
-    // Sıfırlama için benzersiz bir token oluştur
-    const resetToken = uuidv4();
-    // Token için 1 saat geçerlilik süresi ayarla
-    const resetTokenExpires = new Date(Date.now() + 1 * 60 * 60 * 1000);
-
-    // Kullanıcının veritabanına tokeni ve süresini kaydet
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { resetToken, resetTokenExpires }
-    });
-
-    // Email gönder (Frontend tarafında bu linkin karşılanması gerekir, şimdilik backend linki koyduk)
-    const url = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
-    await this.transporter.sendMail({
-      to: user.email,
-      subject: 'Neysoft - Şifre Sıfırlama Talebi',
-      html: `Şifrenizi sıfırlamak için <a href="${url}">buraya tıklayın</a>.<br><br><b>Not:</b> Bu link 1 saat boyunca geçerlidir.`,
-    });
-
-    return { message: 'Şifre sıfırlama linki email adresinize gönderildi.' };
-  }
-
-  // 5. ŞİFREYİ SIFIRLA (RESET PASSWORD)
-  async resetPassword(dto: ResetPasswordDto) {
-    // Tokeni eşleşen ve süresi (resetTokenExpires) şu anki zamandan büyük olan kullanıcıyı bul
-    const user = await this.prisma.user.findFirst({
-      where: {
-        resetToken: dto.token,
-        resetTokenExpires: { gt: new Date() } // "gt" = greater than (şu andan büyük olmalı)
-      }
-    });
-
-    if (!user) {
-      throw new BadRequestException('Geçersiz veya süresi dolmuş sıfırlama tokeni.');
-    }
+  async adminResetPassword(dto: AdminResetPasswordDto) {
+    // Kullanıcıyı bul
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
+    if (!user) throw new NotFoundException('İstifadəçi tapılmadı!');
 
     // Yeni şifreyi hash'le
     const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
 
-    // Kullanıcının şifresini güncelle ve tokenleri temizle
+    // Veritabanında güncelle
     await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        resetToken: null,
-        resetTokenExpires: null
-      }
+      where: { id: dto.userId },
+      data: { password: hashedPassword }
     });
 
-    return { message: 'Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.' };
+    return { message: 'Şifrə uğurla dəyişdirildi!', status: 'success' };
   }
 
   // 6. KULLANICILARI LİSTELE (GET USERS)

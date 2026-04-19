@@ -74,6 +74,16 @@ export class CreateSaleDto {
   @IsString()
   userId?: string;
 
+  @ApiPropertyOptional({ description: 'Müştərin adı' })
+  @IsOptional()
+  @IsString()
+  customerName?: string;
+
+  @ApiPropertyOptional({ description: 'Müştərinin telefon nömrəsi' })
+  @IsOptional()
+  @IsString()
+  customerPhone?: string;
+
   @ApiPropertyOptional({ description: 'Müştərinin verdiyi pul', default: 0 })
   @IsOptional()
   @IsNumber({}, { message: 'Müştərinin verdiyi pul rəqəm formatında olmalıdır' })

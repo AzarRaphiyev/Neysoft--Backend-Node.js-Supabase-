@@ -17,7 +17,7 @@ export class ReturnsService {
     const returnCode = await this.generateReturnCode('CRET');
 
     // Ümumi iadə məbləğini hesablamaq
-    const totalAmount = items.reduce((sum, item) => sum + item.refundAmount, 0);
+    const totalAmount = items.reduce((sum, item) => sum + (Number(item.refundAmount) || 0), 0);
 
     // Transaction ilə bütün əməliyyatları atomik şəkildə icra edirik
     const customerReturn = await this.prisma.$transaction(async (tx) => {
@@ -60,7 +60,7 @@ export class ReturnsService {
       const newReturn = await tx.customerReturn.create({
         data: {
           returnCode,
-          totalAmount,
+          totalAmount: totalAmount || 0,
           reason,
           saleId,
           userId,
@@ -136,7 +136,7 @@ export class ReturnsService {
     const returnCode = await this.generateReturnCode('SRET');
 
     // Ümumi iadə məbləğini hesablamaq
-    const totalAmount = items.reduce((sum, item) => sum + item.refundAmount, 0);
+    const totalAmount = items.reduce((sum, item) => sum + (Number(item.refundAmount) || 0), 0);
 
     // Transaction ilə bütün əməliyyatları atomik şəkildə icra edirik
     const supplierReturn = await this.prisma.$transaction(async (tx) => {
@@ -186,7 +186,7 @@ export class ReturnsService {
       const newReturn = await tx.supplierReturn.create({
         data: {
           returnCode,
-          totalAmount,
+          totalAmount: totalAmount || 0,
           reason,
           receiptId,
           userId,
