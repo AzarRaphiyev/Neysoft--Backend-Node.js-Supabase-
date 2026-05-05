@@ -37,11 +37,17 @@ export class ReturnsController {
     required: false,
     description: 'Son tarix (məs: 2025-12-31)',
   })
+  @ApiQuery({
+    name: 'receiptNo',
+    required: false,
+    description: 'Satış qəbz nömrəsi (məs: REC-12345678)',
+  })
   findAllCustomerReturns(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('receiptNo') receiptNo?: string,
   ) {
-    return this.returnsService.findAllCustomerReturns(startDate, endDate);
+    return this.returnsService.findAllCustomerReturns(startDate, endDate, receiptNo);
   }
 
   // ==================== TƏDARİKÇİ İADƏSİ ====================

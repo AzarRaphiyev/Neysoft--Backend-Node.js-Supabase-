@@ -90,7 +90,7 @@ export class ReturnsService {
   }
 
   // Müştəri iadələrinin tarixçəsini filterlərlə gətirmək
-  async findAllCustomerReturns(startDate?: string, endDate?: string) {
+  async findAllCustomerReturns(startDate?: string, endDate?: string, receiptNo?: string) {
     // Prisma where filtri qururuq
     const where: any = {};
 
@@ -101,8 +101,18 @@ export class ReturnsService {
         where.date.gte = new Date(startDate);
       }
       if (endDate) {
-        where.date.lte = new Date(endDate);
+        where.date.lte = new Date(endDate + 'T23:59:59.999Z');
       }
+    }
+
+    // Qəbz nömrəsi filtri
+    if (receiptNo) {
+      where.sale = {
+        receiptNo: {
+          contains: receiptNo,
+          mode: 'insensitive',
+        },
+      };
     }
 
     // Müştəri iadələrini əlaqəli məlumatlarla birlikdə gətiririk

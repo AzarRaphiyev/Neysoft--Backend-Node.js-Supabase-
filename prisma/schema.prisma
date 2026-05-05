@@ -38,7 +38,6 @@ model Customer {
   id        String   @id @default(uuid())
   fullName  String
   phone     String?
-  sales     Sale[]
   createdAt DateTime @default(now())
 }
 
@@ -155,9 +154,10 @@ model Sale {
 
   userId        String
   user          User          @relation(fields: [userId], references: [id])
-  
-  customerId    String?
-  customer      Customer?     @relation(fields: [customerId], references: [id])
+
+
+  customerName  String?
+  customerPhone String?
 
   items           SaleItem[]
   customerReturns CustomerReturn[]
