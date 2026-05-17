@@ -19,8 +19,8 @@ export class AuthController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Yeni istifadəçi qeydiyyatı və email göndərilməsi' })
-  register(@Body() createAuthDto: CreateAuthDto, @Req() req: any) {
-    return this.authService.register(createAuthDto, req.user);
+  register(@Body() dto: CreateAuthDto, @Req() req: any) {
+    return this.authService.register(dto, req.user);
   }
 
   @Get('verify')

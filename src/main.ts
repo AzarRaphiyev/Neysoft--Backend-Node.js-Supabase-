@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -10,6 +11,15 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+
+  // 🟢 Global ValidationPipe: DTO validasiyası və tip çevirmə (transform) aktiv edilir
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,             // @Type() dekoratorlarını işə salır (string -> number, string -> Date və s.)
+      whitelist: true,             // DTO-da olmayan əlavə sahələri avtomatik silir
+      forbidNonWhitelisted: false, // Əlavə sahələr göndərilsə, xəta vermədən sadəcə onları silir
+    }),
+  );
 
   // 🟢 2. BURA ƏLAVƏ EDİLDİ: Bütün API linklərinin əvvəlinə '/api' artırır
   app.setGlobalPrefix('api');

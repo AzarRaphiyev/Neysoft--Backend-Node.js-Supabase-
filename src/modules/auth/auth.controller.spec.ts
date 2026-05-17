@@ -13,7 +13,10 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'İstifadəçi uğurla yaradıldı.' })
   @ApiResponse({ status: 400, description: 'İstifadəçi artıq mövcuddur.' })
   register(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.register(createAuthDto);
+    // Qeyd: AuthService 2-ci parametr olaraq currentUser tələb edir.
+    // Bura test faylı kimi göründüyü üçün mock bir istifadəçi göndəririk.
+    const mockUser = { role: 'ADMIN' }; 
+    return this.authService.register(createAuthDto, mockUser);
   }
 
   @Post('login')

@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, IsOptional, IsNotEmpty, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // Yeni xərc yaratmaq üçün DTO
 export class CreateExpenseDto {
@@ -10,6 +11,7 @@ export class CreateExpenseDto {
 
   @ApiProperty({ description: 'Xərcin məbləği (AZN)' })
   @IsNotEmpty({ message: 'Məbləğ mütləq daxil edilməlidir' })
+  @Type(() => Number)
   @IsNumber({}, { message: 'Məbləğ rəqəm formatında olmalıdır' })
   @Min(0, { message: 'Məbləğ 0-dan kiçik ola bilməz' })
   amount: number;
@@ -24,3 +26,4 @@ export class CreateExpenseDto {
   @IsString({ message: 'İstifadəçi ID-si mətn formatında olmalıdır' })
   userId: string;
 }
+

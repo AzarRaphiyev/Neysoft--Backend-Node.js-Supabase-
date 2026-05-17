@@ -51,11 +51,48 @@ export class ReportsService {
     // Xalis Qazanc = Ümumi Satış - (Ümumi Xərc + Ümumi İadə)
     const netProfit = totalSales - (totalExpenses + totalReturns);
 
+    // Günlük və Aylıq üçün tarixlər
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    // Günlük və Aylıq Satışlar
+    const dailySalesAgg = await this.prisma.sale.aggregate({
+      where: { date: { gte: startOfToday, lte: endOfToday } },
+      _sum: { finalAmount: true },
+    });
+    const monthlySalesAgg = await this.prisma.sale.aggregate({
+      where: { date: { gte: startOfMonth, lte: endOfMonth } },
+      _sum: { finalAmount: true },
+    });
+
+    // Günlük və Aylıq Xərclər
+    const dailyExpensesAgg = await this.prisma.expense.aggregate({
+      where: { date: { gte: startOfToday, lte: endOfToday } },
+      _sum: { amount: true },
+    });
+    const monthlyExpensesAgg = await this.prisma.expense.aggregate({
+      where: { date: { gte: startOfMonth, lte: endOfMonth } },
+      _sum: { amount: true },
+    });
+
+    const dailySales = dailySalesAgg._sum.finalAmount || 0;
+    const monthlySales = monthlySalesAgg._sum.finalAmount || 0;
+    const dailyExpenses = dailyExpensesAgg._sum.amount || 0;
+    const monthlyExpenses = monthlyExpensesAgg._sum.amount || 0;
+
     return {
       totalSales,
       totalExpenses,
       totalReturns,
       netProfit,
+      dailySales,
+      monthlySales,
+      dailyExpenses,
+      monthlyExpenses,
     };
   }
 }

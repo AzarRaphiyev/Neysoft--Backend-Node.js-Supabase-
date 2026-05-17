@@ -7,8 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_SECRET || 'neysoft-super-gizli-acar-2026', // Real layihədə bunu .env-də saxlayacağıq
-      signOptions: { expiresIn: '365d' }, // Token 1 gün ərzində etibarlıdır
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '12h' }, 
     }),
   ],
   controllers: [AuthController],

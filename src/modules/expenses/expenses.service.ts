@@ -15,6 +15,7 @@ export class ExpensesService {
         amount: dto.amount,
         description: dto.description,
         userId: dto.userId,
+        date: new Date(),
       },
       include: {
         user: true,

@@ -27,12 +27,16 @@ export class AuthService {
   }
 
   async register(dto: CreateAuthDto, currentUser: any) {
-    if (dto.role === Role.ADMIN) {
-      throw new ForbiddenException('Yeni Admin hesabı yaratmaq qadağandır!');
+    if (currentUser.role === Role.MANAGER && dto.role !== Role.CASHIER) {
+      throw new ForbiddenException('Menecerlər yalnız Kassir yarada bilər!');
     }
 
-    if (currentUser.role === Role.MANAGER && dto.role === Role.MANAGER) {
-      throw new ForbiddenException('Müdür (Manager) yalnız Kassir (Cashier) hesabı yarada bilər!');
+    if (currentUser.role === Role.ADMIN && dto.role === Role.ADMIN) {
+      throw new ForbiddenException('Sistemdə başqa Admin yaradıla bilməz!');
+    }
+
+    if (!dto.password) {
+      throw new BadRequestException('Şifrə mütləq daxil edilməlidir');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
