@@ -25,11 +25,17 @@ export class SalesService {
 
     // Transaction ilə bütün əməliyyatları atomik şəkildə icra edirik
     const sale = await this.prisma.$transaction(async (tx) => {
-      // 1. Hər bir məhsulun anbar qalığını yoxlayırıq və azaldırıq
+      // 1. Məhsulları toplu şəkildə bazadan çəkirik (Daha sürətli işləmək üçün)
+      const productIds = items.map((item) => item.productId);
+      const products = await tx.product.findMany({
+        where: { id: { in: productIds } },
+      });
+
+      const productMap = new Map(products.map((p) => [p.id, p]));
+
+      // 2. Yoxlamaları (Validation) həyata keçiririk
       for (const item of items) {
-        const product = await tx.product.findUnique({
-          where: { id: item.productId },
-        });
+        const product = productMap.get(item.productId);
 
         if (!product) {
           throw new BadRequestException(
@@ -50,17 +56,21 @@ export class SalesService {
             `"${product.name}" üçün satış qiyməti mənfi ola bilməz!`,
           );
         }
-
-        // Anbar qalığını satılan miqdar qədər azaldırıq
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stockQuantity: {
-              decrement: item.quantity,
-            },
-          },
-        });
       }
+
+      // 3. Anbar qalıqlarını paralel şəkildə yeniləyirik (Promise.all istifadə edərək)
+      await Promise.all(
+        items.map((item) =>
+          tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: {
+                decrement: item.quantity,
+              },
+            },
+          })
+        )
+      );
 
       // 2. Yeni satış qeydi yaradırıq
       const newSale = await tx.sale.create({
