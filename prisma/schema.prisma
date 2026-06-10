@@ -92,6 +92,7 @@ model Product {
   stockQuantity Int      @default(0)
   purchasePrice Float
   salePrice     Float
+  isDeleted     Boolean  @default(false)
 
   categoryId    String?
   category      Category? @relation(fields: [categoryId], references: [id])

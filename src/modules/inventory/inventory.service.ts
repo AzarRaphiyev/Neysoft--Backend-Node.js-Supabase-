@@ -32,13 +32,14 @@ export class InventoryService {
           );
         }
 
-        // Anbar qalığını daxil olan miqdar qədər artırırıq
+        // Anbar qalığını daxil olan miqdar qədər artırırıq və alış qiymətini yeniləyirik
         await tx.product.update({
           where: { id: item.productId },
           data: {
             stockQuantity: {
               increment: item.quantity,
             },
+            purchasePrice: item.purchasePrice,
           },
         });
       }

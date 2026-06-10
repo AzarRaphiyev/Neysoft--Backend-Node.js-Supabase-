@@ -62,7 +62,9 @@ export class ProductsService {
 
  // --- Axtarış və Filterləmə funksiyası ---
   async findAll(search?: string, isOutOfStock?: boolean, categoryId?: string) {
-    const whereCondition: any = {};
+    const whereCondition: any = {
+      isDeleted: false,
+    };
 
     // 1. Əgər 'search' (axtarış) sözü göndərilibsə: həm ada, həm də barkoda görə axtar
     if (search) {
@@ -194,8 +196,9 @@ export class ProductsService {
       throw new NotFoundException('Silmək üçün məhsul tapılmadı');
     }
 
-    return this.prisma.product.delete({
+    return this.prisma.product.update({
       where: { id },
+      data: { isDeleted: true },
     });
   }
 }
